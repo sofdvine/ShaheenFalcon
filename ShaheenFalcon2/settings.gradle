@@ -1,0 +1,4 @@
+include ':app', ':j2v8-4.8.4'
+gradle.ext.exoplayerRoot = '/home/sid/AndroidStudioProjects/ShaheenFalcon2/app/libs/ExoPlayer'
+gradle.ext.exoplayerModulePrefix = 'exoplayer-'
+apply from: new File(gradle.ext.exoplayerRoot, 'core_settings.gradle')
