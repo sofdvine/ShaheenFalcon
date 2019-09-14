@@ -235,13 +235,14 @@ public class Script extends AppCompatActivity {
         V8Object response = new V8Object(v8);
         String data = "";
         if(request.contains("data")){
-            data = request.getString(data);
+            data = request.getString("data");
         }
         Map<String, String> headers = new HashMap<String, String>();
         for(String key : v8headers.getKeys()){
             headers.put(key, v8headers.getString(key));
         }
         OkHttpClient client = new OkHttpClient();
+        client.setFollowRedirects(false);
         Request req = null;
         if(method.equalsIgnoreCase("GET")) {
             req = new Request.Builder().url(url).headers(Headers.of(headers)).get().build();
