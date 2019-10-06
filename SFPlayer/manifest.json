@@ -1,0 +1,21 @@
+{
+    "name": "SF Player",
+    "version": "1.0.0",
+    "description": "Shaheen Falcon desktop player",
+    "manifest_version": 2,
+    "background": { "scripts": [ "src/js/background.js"] },
+    "content_security_policy": "script-src 'self' https://cdn.jsdelivr.net blob:; object-src 'self'",
+    "permissions": [
+        "tabs",
+        "*://*/*.m3u8*",
+        "*://*/*.mpd*",
+        "*://*/*/Manifest*",
+        "webRequest",
+        "webRequestBlocking",
+        "storage"
+    ],
+    "browser_action": {
+        "default_title": "SF Player",
+        "default_popup": "src/popup.html"
+    }
+}

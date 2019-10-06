@@ -219,12 +219,12 @@ public class MainActivity extends AppCompatActivity {
         wv.addJavascriptInterface(new SFScriptInterface(MainActivity.this, wv.getUrl(), wv.getSettings().getUserAgentString(), requests), "SFINTERFACE");
 
 
-        if(getIntent().getData() != null){
-            if(getIntent().hasExtra("HEADERS")){
-                wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
-            }else{
+        if(getIntent() != null && getIntent().getData() != null){
+//            if(getIntent().hasExtra("HEADERS")){
+//                wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
+//            }else{
                 wv.loadUrl(getIntent().getData().toString());
-            }
+//            }
         }
 
         url_box.setOnKeyListener(new View.OnKeyListener() {
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DOWNLOAD_REQUEST_CODE);
                     }
-                }else{
+                }else if(item.getItemId() == 3){
                     wv.loadUrl(item.getIntent().getStringExtra("A_URL"));
                 }
             }else {

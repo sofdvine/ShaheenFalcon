@@ -73,6 +73,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.ErrorMessageProvider;
 import com.google.android.exoplayer2.util.EventLogger;
+import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 import java.lang.reflect.Constructor;
 import java.net.CookieHandler;
@@ -128,6 +129,7 @@ public class PlayerActivity extends AppCompatActivity
   private PlayerView playerView;
   private LinearLayout debugRootView;
   private Button selectTracksButton;
+  private Button shareScreenButton;
   private TextView debugTextView;
   private boolean isShowingTrackSelectionDialog;
 
@@ -143,6 +145,7 @@ public class PlayerActivity extends AppCompatActivity
   private boolean startAutoPlay;
   private int startWindow;
   private long startPosition;
+  private String sfUrl = "";
 
   // Fields used only for ad playback. The ads loader is loaded via reflection.
 
@@ -174,7 +177,20 @@ public class PlayerActivity extends AppCompatActivity
     debugRootView = findViewById(R.id.controls_root);
     debugTextView = findViewById(R.id.debug_text_view);
     selectTracksButton = findViewById(R.id.select_tracks_button);
+    shareScreenButton = findViewById(R.id.share_button);
     selectTracksButton.setOnClickListener(this);
+
+    shareScreenButton.setOnClickListener(new View.OnClickListener(){
+
+      @Override
+      public void onClick(View view) {
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_TEXT, sfUrl);
+
+        startActivity(Intent.createChooser(share, "Share using"));
+      }
+    });
 
     playerView = findViewById(R.id.player_view);
     playerView.setControllerVisibilityListener(this);
@@ -341,6 +357,7 @@ public class PlayerActivity extends AppCompatActivity
       String[] extensions;
       //if (ACTION_VIEW.equals(action)) {
         uris = new Uri[] {intent.getData()};
+        sfUrl = uris[0].toString();
         extensions = new String[] {intent.getStringExtra(EXTENSION_EXTRA)};
       /*} else if (ACTION_VIEW_LIST.equals(action)) {
         String[] uriStrings = intent.getStringArrayExtra(URI_LIST_EXTRA);
@@ -370,6 +387,7 @@ public class PlayerActivity extends AppCompatActivity
       DefaultDrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
       if (intent.hasExtra(DRM_SCHEME_EXTRA) || intent.hasExtra(DRM_SCHEME_UUID_EXTRA)) {
         String drmLicenseUrl = intent.getStringExtra(DRM_LICENSE_URL_EXTRA);
+        sfUrl += "#" + drmLicenseUrl;
         String[] keyRequestPropertiesArray =
             intent.getStringArrayExtra(DRM_KEY_REQUEST_PROPERTIES_EXTRA);
         boolean multiSession = intent.getBooleanExtra(DRM_MULTI_SESSION_EXTRA, false);
@@ -381,6 +399,7 @@ public class PlayerActivity extends AppCompatActivity
             String drmSchemeExtra = intent.hasExtra(DRM_SCHEME_EXTRA) ? DRM_SCHEME_EXTRA
                 : DRM_SCHEME_UUID_EXTRA;
             UUID drmSchemeUuid = Util.getDrmUuid(intent.getStringExtra(drmSchemeExtra));
+            sfUrl += "#" + drmSchemeExtra;
             if (drmSchemeUuid == null) {
               errorStringId = R.string.error_drm_unsupported_scheme;
             } else {
