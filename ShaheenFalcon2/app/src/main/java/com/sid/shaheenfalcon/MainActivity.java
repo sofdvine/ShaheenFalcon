@@ -220,11 +220,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         if(getIntent() != null && getIntent().getData() != null){
-//            if(getIntent().hasExtra("HEADERS")){
-//                wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
-//            }else{
+            if(getIntent().hasExtra("HEADERS")){
+                wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
+            }else{
                 wv.loadUrl(getIntent().getData().toString());
-//            }
+            }
         }
 
         url_box.setOnKeyListener(new View.OnKeyListener() {

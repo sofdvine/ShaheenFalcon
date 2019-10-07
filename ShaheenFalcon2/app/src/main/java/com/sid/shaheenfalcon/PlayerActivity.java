@@ -399,7 +399,7 @@ public class PlayerActivity extends AppCompatActivity
             String drmSchemeExtra = intent.hasExtra(DRM_SCHEME_EXTRA) ? DRM_SCHEME_EXTRA
                 : DRM_SCHEME_UUID_EXTRA;
             UUID drmSchemeUuid = Util.getDrmUuid(intent.getStringExtra(drmSchemeExtra));
-            sfUrl += "#" + drmSchemeExtra;
+            sfUrl += "#" + intent.getStringExtra(drmSchemeExtra);
             if (drmSchemeUuid == null) {
               errorStringId = R.string.error_drm_unsupported_scheme;
             } else {

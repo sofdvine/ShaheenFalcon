@@ -137,7 +137,7 @@ public class Script extends AppCompatActivity {
                 v8.registerJavaMethod(Script.this, "print", "print", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "input", "input", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "playVideo", "playVideo", new Class<?>[] {String.class} );
-                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideo", new Class<?>[] {String.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideo", new Class<?>[] {String.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "showOpenWithIntent", "showOpenWithIntent", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "exoPlayDRMVideo", "exoPlayDRMVideo", new Class<?>[] {String.class, String.class, String.class, V8Array.class, boolean.class} );
                 v8.registerJavaMethod(Script.this, "openUrlInBrowser", "openUrlInBrowser", new Class<?>[] {String.class} );
@@ -316,11 +316,18 @@ public class Script extends AppCompatActivity {
         Script.this.startActivity(i);
     }
 
-    public void exoPlayVideo(String url){
+    public void exoPlayVideo(String url, V8Object headers){
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
         intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
         intent.putExtra("PLAYER_USER_AGENT", userAgentString);
+        if(headers != null) {
+            HashMap<String, String> mHeaders = new HashMap<String, String>();
+            for (String key : headers.getKeys()) {
+                mHeaders.put(key, headers.get(key).toString());
+            }
+            intent.putExtra("EXTRA_HEADERS", mHeaders);
+        }
         intent.setData(Uri.parse(url));
         this.startActivity(intent);
     }
