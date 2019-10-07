@@ -6,13 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link rel="stylesheet" type="text/css"
+        href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
     <script src="js/shaka-player/dist/shaka-player.compiled.js"></script>
     <script src="js/mux.js/mux.min.js"></script>
 </head>
 
 <body>
-    <video id="video" width="640" controls></video>
-    <script src="js/sample.js"></script>
+    <nav>
+        <div class="icon clearfix">
+            <h1>Shaheen Falcon Player</h1>
+        </div>
+        <ul class="opts">
+            <li class="opt">
+                <a id="btn-list-tracks" href="#!">
+                    <span class="fa fa-list"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="video-container">
+        <video id="video" width="640" controls></video>
+    </div>
+    <script src="js/sfplayer.js"></script>
 </body>
 
 </html>

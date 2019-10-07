@@ -1,0 +1,49 @@
+html, body{
+    margin: 0;
+}
+
+.icon{
+    display: inline-block;
+    float: left;
+}
+
+ul{
+    list-style-type: none;
+    margin: 0;
+}
+
+nav{
+    background-color: #333;
+    color: #fafafa;
+    text-align: right;
+}
+
+nav ul li{
+    display: inline-block;
+    padding: 0;
+}
+
+nav a{
+    display: block;
+    color: #fafafa;
+    padding: 10px;
+}
+
+.video-container{
+    text-align: center;
+    background-color: #333;
+}
+
+.icon h1{
+    margin: 0;
+    padding: 10px 0 0 10px;
+}
+
+.clearfix:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
