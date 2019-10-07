@@ -2,7 +2,7 @@ var manifestUri;
 const licMap = {
     'widevine': 'com.widevine.alpha',
     'playready': 'com.microsoft.playready'
-}
+}, modalContainer = document.getElementById('modal-container');
 let splitted = document.URL.split('#'),
     videoUrl, licenseUrl, licenseMode, extraHeaders;
 if (splitted.length > 1) {
@@ -62,11 +62,14 @@ function openListDialog(list, viewMap, callback) {
         if (typeof callback === 'function') {
             item.onclick = () => {
                 callback(elem, idx, item);
+                modalContainer.removeAttribute('style');
             };
         }
         root.appendChild(item);
     })
-    document.body.appendChild(root);
+    modalContainer.innerHTML = '';
+    modalContainer.appendChild(root);
+    modalContainer.style.display = 'block';
 }
 
 function initApp() {
