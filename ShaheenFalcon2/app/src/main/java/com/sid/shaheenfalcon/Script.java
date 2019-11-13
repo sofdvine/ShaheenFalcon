@@ -366,6 +366,10 @@ public class Script extends AppCompatActivity {
         this.startActivity(intent);
     }
 
+    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession){
+        exoPlayDRMVideo(url, drmLicenseUrl, drmScheme, drmKeyRequestProperties, drmMultiSession, null);
+    }
+
     public String getBrowserCookies(String url){
         return CookieManager.getInstance().getCookie(url);
     }
