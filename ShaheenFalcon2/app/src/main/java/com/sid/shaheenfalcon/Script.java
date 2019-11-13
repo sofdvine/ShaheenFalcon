@@ -137,9 +137,11 @@ public class Script extends AppCompatActivity {
                 v8.registerJavaMethod(Script.this, "print", "print", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "input", "input", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "playVideo", "playVideo", new Class<?>[] {String.class} );
-                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideo", new Class<?>[] {String.class, V8Object.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideo", new Class<?>[] {String.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideoWithHeaders", new Class<?>[] {String.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "showOpenWithIntent", "showOpenWithIntent", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "exoPlayDRMVideo", "exoPlayDRMVideo", new Class<?>[] {String.class, String.class, String.class, V8Array.class, boolean.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayDRMVideo", "exoPlayDRMVideoWithHeaders", new Class<?>[] {String.class, String.class, String.class, V8Array.class, boolean.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "openUrlInBrowser", "openUrlInBrowser", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "openUrlInBrowserWithHeaders", "openUrlInBrowserWithHeaders", new Class<?>[] {String.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "getRequests", "getRequests", new Class<?>[] {} );
@@ -332,13 +334,17 @@ public class Script extends AppCompatActivity {
         this.startActivity(intent);
     }
 
+    public void exoPlayVideo(String url){
+        exoPlayVideo(url, null);
+    }
+
     public void showOpenWithIntent(String url){
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));
         Script.this.startActivity(i);
     }
 
-    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession){
+    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession, V8Object headers){
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
         intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
@@ -348,6 +354,14 @@ public class Script extends AppCompatActivity {
         V8ObjectUtils.toList(drmKeyRequestProperties).toArray(jDrmKeyRequestProperties);
         intent.putExtra(PlayerActivity.DRM_KEY_REQUEST_PROPERTIES_EXTRA,jDrmKeyRequestProperties);
         intent.putExtra(PlayerActivity.DRM_MULTI_SESSION_EXTRA, drmMultiSession);
+        intent.putExtra("PLAYER_USER_AGENT", userAgentString);
+        if(headers != null) {
+            HashMap<String, String> mHeaders = new HashMap<String, String>();
+            for (String key : headers.getKeys()) {
+                mHeaders.put(key, headers.get(key).toString());
+            }
+            intent.putExtra("EXTRA_HEADERS", mHeaders);
+        }
         intent.setData(Uri.parse(url));
         this.startActivity(intent);
     }

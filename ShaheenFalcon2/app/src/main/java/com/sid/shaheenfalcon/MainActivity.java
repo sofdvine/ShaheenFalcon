@@ -393,27 +393,27 @@ public class MainActivity extends AppCompatActivity {
                 Intent i = new Intent();
                 i.putExtra("A_URL", result.getExtra());
                 MenuItem item1 = menu.add(Menu.NONE, 1, Menu.NONE, "Open URL");
-                item1.setIntent(i);
+                //item1.setIntent(i);
                 MenuItem item2 = menu.add(Menu.NONE, 2, Menu.NONE, "Copy URL");
-                item2.setIntent(i);
+                //item2.setIntent(i);
                 if(result.getExtra().split("\\?")[0].endsWith(".mp4") || result.getExtra().split("\\?")[0].endsWith(".m3u8")) {
                     MenuItem item3 = menu.add(Menu.NONE, 6, Menu.NONE, "Play Video");
-                    item3.setIntent(i);
+                    //item3.setIntent(i);
                 }
             }else if(result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE){
                 Intent i = new Intent();
                 i.putExtra("A_URL", result.getExtra());
                 MenuItem item3 = menu.add(Menu.NONE, 3, Menu.NONE, "Open URL");
                 MenuItem item4 = menu.add(Menu.NONE, 4, Menu.NONE, "Copy URL");
-                item3.setIntent(i);
-                item4.setIntent(i);
+                //item3.setIntent(i);
+                //item4.setIntent(i);
             }else if(result.getType() == WebView.HitTestResult.IMAGE_TYPE){
                 Intent i = new Intent();
                 i.putExtra("IMG_URL", result.getExtra());
                 MenuItem item5 = menu.add(Menu.NONE, 5, Menu.NONE, "Open Image");
                 MenuItem item7 = menu.add(Menu.NONE, 7, Menu.NONE, "Download Image");
-                item5.setIntent(i);
-                item7.setIntent(i);
+                //item5.setIntent(i);
+                //item7.setIntent(i);
             }
         }else if(v.getId() == R.id.script_run) {
             if (scripts == null) {
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DOWNLOAD_REQUEST_CODE);
                     }
-                }else if(item.getItemId() == 3){
+                }else if(item.getItemId() == 3 || item.getItemId() == 1){
                     wv.loadUrl(item.getIntent().getStringExtra("A_URL"));
                 }
             }else {
