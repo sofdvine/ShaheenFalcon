@@ -27,4 +27,14 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_view_source"
+        android:orderInCategory="100"
+        android:title="View Source"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_page_contents"
+        android:orderInCategory="100"
+        android:title="Page Contents"
+        app:showAsAction="never" />
 </menu>

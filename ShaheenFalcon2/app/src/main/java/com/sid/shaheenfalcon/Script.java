@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.arch.core.util.Function;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -84,6 +85,7 @@ public class Script extends AppCompatActivity {
         tv.setMovementMethod(new ScrollingMovementMethod());
 
 
+
         //getting bundled requests and url
         Bundle b = getIntent().getBundleExtra("BREQUESTS");
         requests = (ArrayList<SFRequest>) b.getSerializable("REQUESTS");
@@ -138,8 +140,10 @@ public class Script extends AppCompatActivity {
                 v8.registerJavaMethod(Script.this, "input", "input", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "playVideo", "playVideo", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideo", new Class<?>[] {String.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayVideo", "exoPlayVideoWithHeaders", new Class<?>[] {String.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "showOpenWithIntent", "showOpenWithIntent", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "exoPlayDRMVideo", "exoPlayDRMVideo", new Class<?>[] {String.class, String.class, String.class, V8Array.class, boolean.class} );
+                v8.registerJavaMethod(Script.this, "exoPlayDRMVideo", "exoPlayDRMVideoWithHeaders", new Class<?>[] {String.class, String.class, String.class, V8Array.class, boolean.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "openUrlInBrowser", "openUrlInBrowser", new Class<?>[] {String.class} );
                 v8.registerJavaMethod(Script.this, "openUrlInBrowserWithHeaders", "openUrlInBrowserWithHeaders", new Class<?>[] {String.class, V8Object.class} );
                 v8.registerJavaMethod(Script.this, "getRequests", "getRequests", new Class<?>[] {} );
@@ -235,13 +239,14 @@ public class Script extends AppCompatActivity {
         V8Object response = new V8Object(v8);
         String data = "";
         if(request.contains("data")){
-            data = request.getString(data);
+            data = request.getString("data");
         }
         Map<String, String> headers = new HashMap<String, String>();
         for(String key : v8headers.getKeys()){
             headers.put(key, v8headers.getString(key));
         }
         OkHttpClient client = new OkHttpClient();
+        client.setFollowRedirects(false);
         Request req = null;
         if(method.equalsIgnoreCase("GET")) {
             req = new Request.Builder().url(url).headers(Headers.of(headers)).get().build();
@@ -284,7 +289,6 @@ public class Script extends AppCompatActivity {
         optionsDialog.dismiss();
         Log.d("DONE CHOOSEN OPTION", "" + choosenOption);
         return choosenOption;
-
     }
 
     public V8Array getRequests(){
@@ -315,13 +319,24 @@ public class Script extends AppCompatActivity {
         Script.this.startActivity(i);
     }
 
-    public void exoPlayVideo(String url){
+    public void exoPlayVideo(String url, V8Object headers){
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
         intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
         intent.putExtra("PLAYER_USER_AGENT", userAgentString);
+        if(headers != null) {
+            HashMap<String, String> mHeaders = new HashMap<String, String>();
+            for (String key : headers.getKeys()) {
+                mHeaders.put(key, headers.get(key).toString());
+            }
+            intent.putExtra("EXTRA_HEADERS", mHeaders);
+        }
         intent.setData(Uri.parse(url));
         this.startActivity(intent);
+    }
+
+    public void exoPlayVideo(String url){
+        exoPlayVideo(url, null);
     }
 
     public void showOpenWithIntent(String url){
@@ -330,7 +345,7 @@ public class Script extends AppCompatActivity {
         Script.this.startActivity(i);
     }
 
-    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession){
+    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession, V8Object headers){
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
         intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
@@ -340,8 +355,20 @@ public class Script extends AppCompatActivity {
         V8ObjectUtils.toList(drmKeyRequestProperties).toArray(jDrmKeyRequestProperties);
         intent.putExtra(PlayerActivity.DRM_KEY_REQUEST_PROPERTIES_EXTRA,jDrmKeyRequestProperties);
         intent.putExtra(PlayerActivity.DRM_MULTI_SESSION_EXTRA, drmMultiSession);
+        intent.putExtra("PLAYER_USER_AGENT", userAgentString);
+        if(headers != null) {
+            HashMap<String, String> mHeaders = new HashMap<String, String>();
+            for (String key : headers.getKeys()) {
+                mHeaders.put(key, headers.get(key).toString());
+            }
+            intent.putExtra("EXTRA_HEADERS", mHeaders);
+        }
         intent.setData(Uri.parse(url));
         this.startActivity(intent);
+    }
+
+    public void exoPlayDRMVideo(String url, String drmLicenseUrl, String drmScheme, V8Array drmKeyRequestProperties, boolean drmMultiSession){
+        exoPlayDRMVideo(url, drmLicenseUrl, drmScheme, drmKeyRequestProperties, drmMultiSession, null);
     }
 
     public String getBrowserCookies(String url){
@@ -376,6 +403,17 @@ public class Script extends AppCompatActivity {
             Log.d("SFSCRIPT", "NO INPUT");
         }
         return txtInput;
+    }
+
+    public void playAudio(V8Array audios, boolean savePlayList, boolean playNow){
+        V8Object audio;
+        ArrayList<SFDBController.AudioMetadata> audiosMetada = new ArrayList<SFDBController.AudioMetadata>();
+        for(int i = 0; i < audios.length(); i++){
+            audio = audios.getObject(i);
+            audiosMetada.add(new SFDBController.AudioMetadata(audio.getString("url"), audio.getString("title"),
+                    audio.getString("subtitle"), audio.getString("request"), audio.getString("thumb"))
+            );
+        }
     }
 
     @Override
@@ -459,6 +497,16 @@ public class Script extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

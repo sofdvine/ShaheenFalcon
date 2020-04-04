@@ -2,47 +2,50 @@ package com.sid.shaheenfalcon;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.exoplayer2.util.Log;
-import com.google.android.exoplayer2.util.Util;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.transition.Visibility;
 
 import android.os.Environment;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -53,7 +56,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+
+import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_INPUT;
+import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_OPTIONS;
+import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_THREAD_INDEX;
+import static com.sid.shaheenfalcon.SFScriptExecutorService.TYPE_EVENT;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Initiating Arraylists
         requests = new ArrayList<SFRequest>();
+
+        BroadcastReceiver receiver = new ScriptUIReceiver(new Handler());
+        registerReceiver(receiver, new IntentFilter("com.sid.ShaheenFalcon.ScriptUIReceiver"));
 
         //Starting required services
         if(!isMyServiceRunning(DownloaderService.class)){
@@ -218,8 +228,10 @@ public class MainActivity extends AppCompatActivity {
         //wv.addJavascriptInterface(new SFScriptInterface(this), "SFINTERFACE");
         wv.addJavascriptInterface(new SFScriptInterface(MainActivity.this, wv.getUrl(), wv.getSettings().getUserAgentString(), requests), "SFINTERFACE");
 
+//        Intent serviceIntent = new Intent(MainActivity.this, SFScriptExecutorService.class);
+//        startService(serviceIntent);
 
-        if(getIntent().getData() != null){
+        if(getIntent() != null && getIntent().getData() != null){
             if(getIntent().hasExtra("HEADERS")){
                 wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
             }else{
@@ -323,14 +335,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if (scripts.size() == 0) {
                         //Toast.makeText(getApplicationContext(), "DIRECT", Toast.LENGTH_LONG).show();
-                        Intent i = new Intent(MainActivity.this, Script.class);
-                        i.putExtra("URL", wv.getUrl());
-                        i.putExtra("SCRIPT", "");
-                        i.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
-                        Bundle b = new Bundle();
-                        b.putSerializable("REQUESTS", (Serializable) requests);
-                        i.putExtra("BREQUESTS", b);
-                        startActivity(i);
+//                        Intent i = new Intent(MainActivity.this, Script.class);
+//                        i.putExtra("URL", wv.getUrl());
+//                        i.putExtra("SCRIPT", "");
+//                        i.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
+//                        Bundle b = new Bundle();
+//                        b.putSerializable("REQUESTS", (Serializable) requests);
+//                        i.putExtra("BREQUESTS", b);
+//                        startActivity(i);
+                        Toast.makeText(getApplicationContext(), "No script found", Toast.LENGTH_LONG).show();
                     } else {
                         registerForContextMenu(scriptRun);
                         openContextMenu(scriptRun);
@@ -378,6 +391,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 wv.resumeTimers();
             }
+        } else if (id == R.id.action_view_source) {
+            wv.loadUrl("view-source:" + wv.getUrl());
+        } else if (id == R.id.action_page_contents) {
+            Intent intent = new Intent(MainActivity.this, RequestListActivity.class);
+            intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
+            RequestListActivity.requests = (ArrayList<SFRequest>) requests.clone();
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -393,27 +413,27 @@ public class MainActivity extends AppCompatActivity {
                 Intent i = new Intent();
                 i.putExtra("A_URL", result.getExtra());
                 MenuItem item1 = menu.add(Menu.NONE, 1, Menu.NONE, "Open URL");
-                item1.setIntent(i);
+                //item1.setIntent(i);
                 MenuItem item2 = menu.add(Menu.NONE, 2, Menu.NONE, "Copy URL");
-                item2.setIntent(i);
+                //item2.setIntent(i);
                 if(result.getExtra().split("\\?")[0].endsWith(".mp4") || result.getExtra().split("\\?")[0].endsWith(".m3u8")) {
                     MenuItem item3 = menu.add(Menu.NONE, 6, Menu.NONE, "Play Video");
-                    item3.setIntent(i);
+                    //item3.setIntent(i);
                 }
             }else if(result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE){
                 Intent i = new Intent();
                 i.putExtra("A_URL", result.getExtra());
                 MenuItem item3 = menu.add(Menu.NONE, 3, Menu.NONE, "Open URL");
                 MenuItem item4 = menu.add(Menu.NONE, 4, Menu.NONE, "Copy URL");
-                item3.setIntent(i);
-                item4.setIntent(i);
+                //item3.setIntent(i);
+                //item4.setIntent(i);
             }else if(result.getType() == WebView.HitTestResult.IMAGE_TYPE){
                 Intent i = new Intent();
                 i.putExtra("IMG_URL", result.getExtra());
                 MenuItem item5 = menu.add(Menu.NONE, 5, Menu.NONE, "Open Image");
                 MenuItem item7 = menu.add(Menu.NONE, 7, Menu.NONE, "Download Image");
-                item5.setIntent(i);
-                item7.setIntent(i);
+                //item5.setIntent(i);
+                //item7.setIntent(i);
             }
         }else if(v.getId() == R.id.script_run) {
             if (scripts == null) {
@@ -464,7 +484,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DOWNLOAD_REQUEST_CODE);
                     }
-                }else{
+                }else if(item.getItemId() == 3 || item.getItemId() == 1){
                     wv.loadUrl(item.getIntent().getStringExtra("A_URL"));
                 }
             }else {
@@ -499,14 +519,34 @@ public class MainActivity extends AppCompatActivity {
         } else {
             int i = item.getItemId() - 1;
             if (scripts.get(i).getFirstRun().trim().equals("")) {
-                Intent intent = new Intent(MainActivity.this, Script.class);
-                intent.putExtra("URL", wv.getUrl());
-                intent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
-                intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
-                Bundle b = new Bundle();
-                b.putSerializable("REQUESTS", (Serializable) requests);
-                intent.putExtra("BREQUESTS", b);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity.this, Script.class);
+//                intent.putExtra("URL", wv.getUrl());
+//                intent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
+//                intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
+//                Bundle b = new Bundle();
+//                b.putSerializable("REQUESTS", (Serializable) requests);
+//                intent.putExtra("BREQUESTS", b);
+//                startActivity(intent);
+                if(!isMyServiceRunning(SFScriptExecutorService.class)){
+                    Intent serviceIntent = new Intent(MainActivity.this, SFScriptExecutorService.class);
+                    serviceIntent.putExtra("URL", wv.getUrl());
+                    serviceIntent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
+                    serviceIntent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
+                    serviceIntent.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
+                    SFScriptExecutorService.scriptRequests.add(requests);
+                    MainActivity.this.startService(serviceIntent);
+                    Log.d("MAIN", "SCRIPT EXECUTOR SERVICE STARTED");
+                }else{
+                    Intent intent = new Intent("com.sid.ShaheenFalcon.SFScriptExecutorService");
+                    intent.putExtra("URL", wv.getUrl());
+                    intent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
+                    intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
+                    intent.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
+                    SFScriptExecutorService.scriptRequests.add(requests);
+                    sendBroadcast(intent);
+                    Log.d("MAIN", "SCRIPT EXECUTOR SERVICE RUNNING");
+                }
+                Log.d("MAIN", "broadcast sent");
             } else {
                 wv.loadUrl("javascript:" + scripts.get(i).getFirstRun().replace("runSFScript(", "SFINTERFACE.parseData(\"" + scripts.get(i).getScriptLocation() + "\", "));
             }
@@ -589,6 +629,80 @@ public class MainActivity extends AppCompatActivity {
             sendBroadcast(intent);
         } else {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, DOWNLOAD_REQUEST_CODE);
+        }
+    }
+
+    public class ScriptUIReceiver extends BroadcastReceiver {
+        private Handler handler;
+        private android.app.AlertDialog optionsDialog = null;
+        private ArrayList<String> options = null;
+        ScriptUIReceiver(Handler handler){
+            this.handler = handler;
+        }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final int threadIdx = intent.getIntExtra(SFScriptExecutorService.SCRIPT_THREAD_INDEX, -1);
+            // Post the UI updating code to our Handler
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    //Toast.makeText(context, "Toast from broadcast receiver", Toast.LENGTH_SHORT).show();
+                    if(intent.hasExtra(SCRIPT_OPTIONS)){
+                        //btnHidden.performClick();
+                        /*registerForContextMenu(tv);
+
+                        openContextMenu(tv);*/
+                        options = intent.getStringArrayListExtra(SCRIPT_OPTIONS);
+                        Log.d("SCRIPT_UI_RECEIVER", "GOT " + options.size());
+                        LayoutInflater li = LayoutInflater.from(MainActivity.this);
+                        View ll = li.inflate(R.layout.list_options, null);
+                        final ListView lv = ll.findViewById(R.id.options_list);
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, R.layout.script_option_item, options);
+                        lv.setAdapter(arrayAdapter);
+                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                                 i;
+//                                android.util.Log.d("CHOOSEN OPTION", l + "" + i);
+                                Intent scriptExecutorServiceIntent = new Intent("com.sid.ShaheenFalcon.SFScriptExecutorService");
+                                scriptExecutorServiceIntent.putExtra("TYPE", TYPE_EVENT);
+                                scriptExecutorServiceIntent.putExtra(SCRIPT_THREAD_INDEX, threadIdx);
+                                scriptExecutorServiceIntent.putExtra(SCRIPT_OPTIONS, i);
+                                sendBroadcast(scriptExecutorServiceIntent);
+                                optionsDialog.dismiss();
+                            }
+                        });
+                        android.app.AlertDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(MainActivity.this);
+                        dialogBuilder.setView(ll);
+                        optionsDialog = dialogBuilder.create();
+                        optionsDialog.show();
+                    }else if(intent.hasExtra(SFScriptExecutorService.SCRIPT_STDOUT)){
+                        Toast.makeText(MainActivity.this.getApplicationContext(), intent.getStringExtra(SFScriptExecutorService.SCRIPT_STDOUT), Toast.LENGTH_LONG).show();
+                    }else if(intent.hasExtra(SFScriptExecutorService.SCRIPT_INPUT)){
+                        final EditText input = new EditText(MainActivity.this);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.MATCH_PARENT);
+                        input.setLayoutParams(lp);
+                        android.app.AlertDialog.Builder inputDialog = new android.app.AlertDialog.Builder(MainActivity.this)
+                                .setMessage(intent.getStringExtra("INPUT"))
+                                .setView(input)
+                                .setCancelable(true)
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String txtInput = input.getText().toString();
+                                        Intent scriptExecutorServiceIntent = new Intent("com.sid.ShaheenFalcon.SFScriptExecutorService");
+                                        scriptExecutorServiceIntent.putExtra("TYPE", TYPE_EVENT);
+                                        scriptExecutorServiceIntent.putExtra(SCRIPT_THREAD_INDEX, threadIdx);
+                                        scriptExecutorServiceIntent.putExtra(SCRIPT_INPUT, txtInput);
+                                        sendBroadcast(scriptExecutorServiceIntent);
+                                    }
+                                });
+                        inputDialog.create().show();
+                    }
+                }
+            });
         }
     }
 }
