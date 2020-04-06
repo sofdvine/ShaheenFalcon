@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     Map<String, String> requestHeaders = request.getRequestHeaders();
                     if (CookieManager.getInstance().getCookie(request.getUrl().toString()) != null) {
-                        requestHeaders.put("Cookies", CookieManager.getInstance().getCookie(request.getUrl().toString()));
+                        requestHeaders.put("Cookie", CookieManager.getInstance().getCookie(request.getUrl().toString()));
                     }
                     requests.add(new SFRequest(request.getMethod(), request.getUrl().toString(), requestHeaders));
                 }
