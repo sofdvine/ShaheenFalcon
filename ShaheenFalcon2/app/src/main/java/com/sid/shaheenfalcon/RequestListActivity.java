@@ -23,6 +23,12 @@ import com.google.android.exoplayer2.util.Log;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static com.sid.shaheenfalcon.Intruder.REQ_BODY;
+import static com.sid.shaheenfalcon.Intruder.REQ_HEADERS;
+import static com.sid.shaheenfalcon.Intruder.REQ_METHOD;
+import static com.sid.shaheenfalcon.Intruder.REQ_URL;
+import static com.sid.shaheenfalcon.Intruder.TYPE_REQ;
+
 public class RequestListActivity extends AppCompatActivity {
 
     protected static ArrayList<SFRequest> requests;
@@ -56,12 +62,18 @@ public class RequestListActivity extends AppCompatActivity {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         switch (item.getItemId()) {
             case 1:
+                Intent intruderIntent = new Intent(RequestListActivity.this, Intruder.class);
+                intruderIntent.putExtra(REQ_METHOD, requests.get(info.position).getMethod());
+                intruderIntent.putExtra(REQ_URL, requests.get(info.position).getUrl());
+                intruderIntent.putExtra(REQ_HEADERS, Intruder.headersHashMaptoStr(new HashMap<String, String>(requests.get(info.position).getHeaders())));
+                intruderIntent.putExtra(REQ_BODY, "");
+                intruderIntent.putExtra(TYPE_REQ, true);
+                startActivity(intruderIntent);
                 break;
             case 2:
-                Log.d("REQ_LIST_URL", requests.get(info.position).getUrl());
                 Intent intent = new Intent(RequestListActivity.this, PlayerActivity.class);
-                intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
-                intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
+//                intent.putExtra(PlayerActivity.PREFER_EXTENSION_DECODERS_EXTRA, true);
+//                intent.putExtra(PlayerActivity.ABR_ALGORITHM_EXTRA, PlayerActivity.ABR_ALGORITHM_DEFAULT);
                 intent.putExtra("PLAYER_USER_AGENT", userAgentStr);
                 intent.putExtra("EXTRA_HEADERS", new HashMap<String, String>(requests.get(info.position).getHeaders()));
                 intent.setData(Uri.parse(requests.get(info.position).getUrl()));

@@ -47,7 +47,7 @@ public class SFScriptInterface {
 //            serviceIntent.putExtra("BREQUESTS", b);
 //        context.startActivity(i);
             serviceIntent.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
-            SFScriptExecutorService.scriptRequests.add(requests);
+            SFScriptExecutorService.scriptRequests.add((ArrayList<SFRequest>) requests.clone());
             this.context.startService(serviceIntent);
         }else{
             Intent i = new Intent("com.sid.ShaheenFalcon.SFScriptExecutorService");
@@ -61,7 +61,7 @@ public class SFScriptInterface {
 //        context.startActivity(i);
             i.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
             Log.d("INTERFACE", "service running");
-            SFScriptExecutorService.scriptRequests.add(requests);
+            SFScriptExecutorService.scriptRequests.add((ArrayList<SFRequest>) requests.clone());
             this.context.sendBroadcast(i);
         }
         Log.d("INTERFACE", "broadcast sent");

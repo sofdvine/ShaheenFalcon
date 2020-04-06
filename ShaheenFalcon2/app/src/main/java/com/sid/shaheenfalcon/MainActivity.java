@@ -57,6 +57,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static com.sid.shaheenfalcon.Intruder.REQ_BODY;
+import static com.sid.shaheenfalcon.Intruder.REQ_HEADERS;
+import static com.sid.shaheenfalcon.Intruder.RES_BODY;
+import static com.sid.shaheenfalcon.Intruder.RES_HEADERS;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_INPUT;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_OPTIONS;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_THREAD_INDEX;
@@ -232,9 +236,21 @@ public class MainActivity extends AppCompatActivity {
 //        startService(serviceIntent);
 
         if(getIntent() != null && getIntent().getData() != null){
-            if(getIntent().hasExtra("HEADERS")){
+            if (getIntent().hasExtra(RES_BODY)) {
+                String contentType = "text/html", contentEncoding = null;
+                if (getIntent().hasExtra(RES_HEADERS)) {
+                    HashMap<String, String> resHeaders = (HashMap<String, String>) getIntent().getSerializableExtra(RES_HEADERS);
+                    if (resHeaders.containsKey("Content-Type")) {
+                        contentType = resHeaders.get("Content-Type");
+                    }
+                    if (resHeaders.containsKey("Content-Encoding")) {
+                        contentType = resHeaders.get("Content-Encoding");
+                    }
+                }
+                wv.loadDataWithBaseURL(getIntent().getData().toString(), getIntent().getStringExtra(RES_BODY), contentType, contentEncoding, null);
+            } else if (getIntent().hasExtra("HEADERS")){
                 wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
-            }else{
+            } else {
                 wv.loadUrl(getIntent().getData().toString());
             }
         }
@@ -533,7 +549,7 @@ public class MainActivity extends AppCompatActivity {
                     serviceIntent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
                     serviceIntent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
                     serviceIntent.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
-                    SFScriptExecutorService.scriptRequests.add(requests);
+                    SFScriptExecutorService.scriptRequests.add((ArrayList<SFRequest>) requests.clone());
                     MainActivity.this.startService(serviceIntent);
                     Log.d("MAIN", "SCRIPT EXECUTOR SERVICE STARTED");
                 }else{
@@ -542,7 +558,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("SCRIPT", scripts.get(i).getScriptLocation());
                     intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
                     intent.putExtra("TYPE", SFScriptExecutorService.TYPE_EXEC);
-                    SFScriptExecutorService.scriptRequests.add(requests);
+                    SFScriptExecutorService.scriptRequests.add((ArrayList<SFRequest>) requests.clone());
                     sendBroadcast(intent);
                     Log.d("MAIN", "SCRIPT EXECUTOR SERVICE RUNNING");
                 }

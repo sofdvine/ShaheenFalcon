@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".RequestListActivity"></activity>
+        <activity android:name=".Intruder"></activity>
+        <activity android:name=".RequestListActivity" />
         <activity
             android:name=".DownloadManager"
             android:label="@string/title_activity_download_manager"
@@ -117,7 +118,7 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
-        <service android:name=".SFScriptExecutorService"></service>
+        <service android:name=".SFScriptExecutorService" />
 
         <receiver android:name="androidx.media.session.MediaButtonReceiver">
             <intent-filter>
