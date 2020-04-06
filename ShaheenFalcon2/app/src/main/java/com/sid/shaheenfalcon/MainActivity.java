@@ -56,6 +56,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import static com.sid.shaheenfalcon.Intruder.REQ_BODY;
 import static com.sid.shaheenfalcon.Intruder.REQ_HEADERS;
@@ -115,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
 
         wv.getSettings().setAppCacheEnabled(false);
         wv.getSettings().setCacheMode(wv.getSettings().LOAD_NO_CACHE);
+        if (getIntent().hasExtra("USER_AGENT")){
+            wv.getSettings().setUserAgentString(getIntent().getStringExtra("USER_AGENT"));
+        }
         wv.clearFormData();
         wv.clearHistory();
         wv.clearCache(true);
@@ -139,7 +143,11 @@ public class MainActivity extends AppCompatActivity {
                     i.setData(request.getUrl());
                     startActivity(i);
                 }else {
-                    requests.add(new SFRequest(request.getMethod(), request.getUrl().toString(), request.getRequestHeaders()));
+                    Map<String, String> requestHeaders = request.getRequestHeaders();
+                    if (CookieManager.getInstance().getCookie(request.getUrl().toString()) != null) {
+                        requestHeaders.put("Cookies", CookieManager.getInstance().getCookie(request.getUrl().toString()));
+                    }
+                    requests.add(new SFRequest(request.getMethod(), request.getUrl().toString(), requestHeaders));
                 }
                 return super.shouldInterceptRequest(view, request);
             }
@@ -415,6 +423,11 @@ public class MainActivity extends AppCompatActivity {
             RequestListActivity.requests = (ArrayList<SFRequest>) requests.clone();
             startActivity(intent);
         }
+//        else if (id == R.id.action_user_agent) {
+//
+//        } else if (id == R.id.action_cookies_edit) {
+//
+//        }
 
         return super.onOptionsItemSelected(item);
     }
