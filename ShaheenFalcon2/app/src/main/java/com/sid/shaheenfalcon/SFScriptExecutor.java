@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_EXEC_DONE;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_INPUT;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_OPTIONS;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_THREAD_INDEX;
@@ -57,7 +58,7 @@ public class SFScriptExecutor extends Thread {
     private  V8 v8 = null;
     private String userAgentString = "", extraData = "", scriptCode = "", scriptLocation = "", url = "";
     private int threadIdx;
-    private boolean isDone = false;
+    private boolean isDone = false, keepAlive = false;
     ArrayList<SFRequest> requests = null;
     Context context = null;
     public int choosenOption = -1;
@@ -136,7 +137,7 @@ public class SFScriptExecutor extends Thread {
 
         try {
             v8.executeVoidScript(scriptCode);
-            while (!isDone) {
+            while (keepAlive && !isDone) {
                 this.wait();
                 v8.executeVoidScript("ShaheenFalcon && ShaheenFalcon.fireEvent(\"" + evtName + "\");");
             }
@@ -147,6 +148,11 @@ public class SFScriptExecutor extends Thread {
 //            context.sendBroadcast(i);
         }finally {
             try{
+                Intent intent = new Intent("com.sid.ShaheenFalcon.ScriptUIReceiver");
+                intent.putExtra("TYPE", TYPE_EVENT);
+                intent.putExtra(SCRIPT_THREAD_INDEX, threadIdx);
+                intent.putExtra(SCRIPT_EXEC_DONE, true);
+                this.context.sendBroadcast(intent);
                 v8.terminateExecution();
                 v8.release(false);
             }catch (Exception ex){
