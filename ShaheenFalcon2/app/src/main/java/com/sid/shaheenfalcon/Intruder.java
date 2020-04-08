@@ -15,12 +15,12 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.android.exoplayer2.util.Log;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -83,8 +83,7 @@ public class Intruder extends AppCompatActivity {
                             if (cookiesStr != null) {
                                 headers.put("Cookies", cookiesStr);
                             }
-                            OkHttpClient client = new OkHttpClient();
-                            client.setFollowRedirects(false);
+                            OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).build();
                             Request req = null;
                             if(method.equalsIgnoreCase("GET")) {
                                 req = new Request.Builder().url(url).headers(Headers.of(headers)).get().build();
