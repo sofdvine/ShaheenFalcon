@@ -11,7 +11,7 @@ You can browse the web using Shaheen Falcon as a simple web browser.<br/>
 You can write and execute your own scripts (in JavaScript). Along with JavaScript inbuilt functionalities, some additional global functions (eg. `httpRequest` to send http request, `getBrowserCookies` to fetch browser cookies for a url, `getRequests` to fetch all http requests sent by browser for currently opened webpage etc.) are supported through the scripts. These script files are executed through [J2V8](https://github.com/eclipsesource/J2V8).
 
 ### View Page Source
-Menu > View Source to view page source for currently opened webpage on Shaheen Falcon Web Browser.<br/>
+Menu > View Source to view page source of currently opened webpage on Shaheen Falcon Web Browser.<br/>
 <img src="/images/view-source-1.png" width="240px" /> <img src="/images/view-source-2.png" width="240px" />
 
 ### Log, View, Edit and Send HTTP Requests
