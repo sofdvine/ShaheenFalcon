@@ -3,9 +3,11 @@ package com.sid.shaheenfalcon;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,8 +39,9 @@ public class Intruder extends AppCompatActivity {
     RES_HEADERS = "RES_HEADERS",
     RES_BODY = "RES_BODY", TYPE_REQ = "TYPE_REQ", TYPE_RES = "TYPE_RES";
 
-    EditText etMethod, etUrl, etHeaders, etBody;
+    EditText etMethod, etUrl, etHeaders, etBody, progressBar;
     Button btnSend;
+    ProgressDialog sendingDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,8 @@ public class Intruder extends AppCompatActivity {
                 body = etBody.getText().toString();
 
                 if (Intruder.this.getIntent().hasExtra(TYPE_REQ)) {
+                    sendingDialog = ProgressDialog.show(Intruder.this, "",
+                            "Sending...", true);
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -95,7 +100,11 @@ public class Intruder extends AppCompatActivity {
                                 Intent intent = new Intent(Intruder.this, Intruder.class);
                                 Response res = client.newCall(req).execute();
                                 intent.putExtra(RES_CODE, res.code() + res.message());
-                                intent.putExtra(RES_BODY, res.body().string());
+                                if (res.body().contentType().toString().startsWith("text") || res.body().contentType().toString().toLowerCase().matches("^(application/json|application/xml)")) {
+                                    intent.putExtra(RES_BODY, res.body().string());
+                                } else {
+                                    intent.putExtra(RES_BODY, Base64.encodeToString(res.body().bytes(), Base64.NO_PADDING));
+                                }
                                 Map<String, List<String>> resHeaders = res.headers().toMultimap();
                                 String resHeadersStr = "";
                                 for (String headerName : resHeaders.keySet()) {
@@ -114,7 +123,7 @@ public class Intruder extends AppCompatActivity {
                 } else if (Intruder.this.getIntent().hasExtra(TYPE_RES)) {
                     Intent intent = new Intent(Intruder.this, MainActivity.class);
                     intent.setData(Uri.parse(etUrl.getText().toString()));
-                    intent.putExtra(RES_HEADERS, headersStrToHashMap(etHeaders.getText().toString()));
+                    intent.putExtra(RES_HEADERS, headersStrToHashMap(etHeaders.getText().toString(), false));
                     intent.putExtra(RES_BODY, etBody.getText().toString());
                     Intruder.this.startActivity(intent);
                 }
@@ -175,16 +184,28 @@ public class Intruder extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
-    public static HashMap<String, String> headersStrToHashMap(String headersStr) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (sendingDialog != null) {
+            sendingDialog.dismiss();
+        }
+    }
+
+    public static HashMap<String, String> headersStrToHashMap(String headersStr, boolean isCaseSensitive) {
         HashMap<String, String> headersMap = new HashMap<String, String>();
         String[] headerLines = headersStr.split("\\\n");
         for (String headerLine : headerLines) {
             String[] pair = headerLine.split(":", 2);
             if (pair.length == 2) {
-                headersMap.put(pair[0].trim(), pair[1].trim());
+                headersMap.put(isCaseSensitive ? pair[0].trim() : pair[0].trim().toLowerCase(), pair[1].trim());
             }
         }
         return headersMap;
+    }
+
+    public static HashMap<String, String> headersStrToHashMap(String headersStr) {
+        return headersStrToHashMap(headersStr, true);
     }
 
     public static String headersHashMaptoStr(HashMap<String, String> headersHashMap) {

@@ -72,10 +72,10 @@ public class MainActivity extends AppCompatActivity {
     EditText url_box = null;
     WebView wv = null;
     Button scriptRun = null;
-    ProgressBar progressBar = null;
+    ProgressBar progressBar = null, scriptLoading = null;
     ArrayList<SFRequest> requests = null;
     ArrayList<ScriptInfo> scripts = null;
-    private static int DOWNLOAD_REQUEST_CODE = 100;
+    private static int DOWNLOAD_REQUEST_CODE = 100, currentExecScript = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         wv = (WebView) findViewById(R.id.sf_webview);
         scriptRun = (Button) findViewById(R.id.script_run);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        scriptLoading = findViewById(R.id.script_progressBar);
 
         //Initiating Arraylists
         requests = new ArrayList<SFRequest>();
@@ -248,14 +249,22 @@ public class MainActivity extends AppCompatActivity {
                 String contentType = "text/html", contentEncoding = null;
                 if (getIntent().hasExtra(RES_HEADERS)) {
                     HashMap<String, String> resHeaders = (HashMap<String, String>) getIntent().getSerializableExtra(RES_HEADERS);
-                    if (resHeaders.containsKey("Content-Type")) {
-                        contentType = resHeaders.get("Content-Type");
+                    if (resHeaders.containsKey("content-type")) {
+                        contentType = resHeaders.get("content-type");
                     }
-                    if (resHeaders.containsKey("Content-Encoding")) {
-                        contentType = resHeaders.get("Content-Encoding");
+                    if (resHeaders.containsKey("content-encoding")) {
+                        contentEncoding = resHeaders.get("content-encoding");
+                    }
+                    if (!contentType.startsWith("text")) {
+                        contentEncoding = "base64";
                     }
                 }
-                wv.loadDataWithBaseURL(getIntent().getData().toString(), getIntent().getStringExtra(RES_BODY), contentType, contentEncoding, null);
+                Log.d("MAIN", contentEncoding + " " + contentType);
+                if (contentType.startsWith("text") || contentType.toLowerCase().matches("^(application/json|application/xml)")) {
+                    wv.loadDataWithBaseURL(getIntent().getData().toString(), getIntent().getStringExtra(RES_BODY), contentType, contentEncoding, null);
+                } else {
+                    wv.loadData(getIntent().getStringExtra(RES_BODY), contentType, contentEncoding);
+                }
             } else if (getIntent().hasExtra("HEADERS")){
                 wv.loadUrl(getIntent().getData().toString(), (HashMap<String, String>) getIntent().getSerializableExtra("HEADERS"));
             } else {
@@ -556,6 +565,7 @@ public class MainActivity extends AppCompatActivity {
 //                b.putSerializable("REQUESTS", (Serializable) requests);
 //                intent.putExtra("BREQUESTS", b);
 //                startActivity(intent);
+                currentExecScript = SFScriptExecutorService.currentId;
                 if(!isMyServiceRunning(SFScriptExecutorService.class)){
                     Intent serviceIntent = new Intent(MainActivity.this, SFScriptExecutorService.class);
                     serviceIntent.putExtra("URL", wv.getUrl());
@@ -575,6 +585,8 @@ public class MainActivity extends AppCompatActivity {
                     sendBroadcast(intent);
                     Log.d("MAIN", "SCRIPT EXECUTOR SERVICE RUNNING");
                 }
+                scriptLoading.setVisibility(View.VISIBLE);
+                scriptRun.setVisibility(View.GONE);
                 Log.d("MAIN", "broadcast sent");
             } else {
                 wv.loadUrl("javascript:" + scripts.get(i).getFirstRun().replace("runSFScript(", "SFINTERFACE.parseData(\"" + scripts.get(i).getScriptLocation() + "\", "));
@@ -661,6 +673,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        scriptLoading.setVisibility(View.GONE);
+        scriptRun.setVisibility(View.VISIBLE);
+        super.onResume();
+    }
+
     public class ScriptUIReceiver extends BroadcastReceiver {
         private Handler handler;
         private android.app.AlertDialog optionsDialog = null;
@@ -704,6 +723,22 @@ public class MainActivity extends AppCompatActivity {
                         android.app.AlertDialog.Builder dialogBuilder = new android.app.AlertDialog.Builder(MainActivity.this);
                         dialogBuilder.setView(ll);
                         optionsDialog = dialogBuilder.create();
+                        optionsDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                // add code to stop execution
+                                scriptLoading.setVisibility(View.GONE);
+                                scriptRun.setVisibility(View.VISIBLE);
+                            }
+                        });
+                        optionsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                // add code to stop execution
+                                scriptLoading.setVisibility(View.GONE);
+                                scriptRun.setVisibility(View.VISIBLE);
+                            }
+                        });
                         optionsDialog.show();
                     }else if(intent.hasExtra(SFScriptExecutorService.SCRIPT_STDOUT)){
                         Toast.makeText(MainActivity.this.getApplicationContext(), intent.getStringExtra(SFScriptExecutorService.SCRIPT_STDOUT), Toast.LENGTH_LONG).show();
@@ -729,6 +764,9 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 });
                         inputDialog.create().show();
+                    } else if (intent.hasExtra(SFScriptExecutorService.SCRIPT_EXEC_DONE) && threadIdx == currentExecScript) {
+                        scriptLoading.setVisibility(View.GONE);
+                        scriptRun.setVisibility(View.VISIBLE);
                     }
                 }
             });

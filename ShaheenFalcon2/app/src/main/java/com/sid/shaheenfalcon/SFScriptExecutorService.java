@@ -39,9 +39,11 @@ public class SFScriptExecutorService extends Service {
                                 SCRIPT_OPTIONS = "script_options",
                                 SCRIPT_EXEC = "script_exec",
                                 SCRIPT_STDOUT = "script_print",
-                                SCRIPT_THREAD_INDEX = "script_thread_index";
+                                SCRIPT_THREAD_INDEX = "script_thread_index",
+                                SCRIPT_EXEC_DONE = "script_exec_done";
 
     protected static ArrayList<ArrayList<SFRequest>> scriptRequests = new ArrayList<ArrayList<SFRequest>>();
+    protected static int currentId = 0;
 
     private ArrayList<Thread> sfScriptExecutors;
 
@@ -124,6 +126,7 @@ public class SFScriptExecutorService extends Service {
                 StrictMode.ThreadPolicy policy =
                         new StrictMode.ThreadPolicy.Builder().permitAll().build();
                 StrictMode.setThreadPolicy(policy);
+                currentId = sfScriptExecutors.size();
                 Thread t = new SFScriptExecutor(SFScriptExecutorService.this, scriptLocation, url, requests, extraData, userAgentString, sfScriptExecutors.size());
                 sfScriptExecutors.add(t);
                 t.start();

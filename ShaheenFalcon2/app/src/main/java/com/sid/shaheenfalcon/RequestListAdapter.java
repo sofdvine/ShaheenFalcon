@@ -20,7 +20,10 @@ public class RequestListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return this.requests.size();
+        if (requests != null) {
+            return this.requests.size();
+        }
+        return 0;
     }
 
     @Override
