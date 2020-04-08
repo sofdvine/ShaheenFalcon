@@ -15,20 +15,20 @@ Menu > View Source to view page source of currently opened webpage on Shaheen Fa
 <img src="/images/view-source-1.png" width="240px" /> <img src="/images/view-source-2.png" width="240px" />
 
 ### Log, View, Edit and Send HTTP Requests
-##### Log all HTTP requests sent by browser for currently opened webpage
+##### 1. Log all HTTP requests sent by browser for currently opened webpage
 (Menu > Page Contents)<br/>
 <img src="/images/log-view-edit-requests.png" width="240px" />
 
-##### View and edit each request method, path, parameters, headers and request body
+##### 2. View and edit each request method, path, parameters, headers and request body
 <img src="/images/log-view-edit-requests-2.png" width="240px" /> <img src="/images/log-view-edit-requests-3.png" width="240px" />
 
-##### Send modified request
+##### 3. Send modified request
 <img src="/images/log-view-edit-requests-4.png" width="240px" />
 
-##### View and edit the response code, path, headers and response body
+##### 4. View and edit the response code, path, headers and response body
 <img src="/images/view-edit-response-1.png" width="240px" /> <img src="/images/view-edit-response-3.png" width="240px" />
 
-##### Load modified response on browser <br/>
+##### 5. Load modified response on browser <br/>
 <img src="/images/view-edit-response-4.png" width="240px" />
 
 ## Features under development
