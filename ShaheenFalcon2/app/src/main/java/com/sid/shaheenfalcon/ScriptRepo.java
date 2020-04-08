@@ -7,10 +7,10 @@ import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Protocol;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -84,8 +84,7 @@ public class ScriptRepo extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            OkHttpClient client = new OkHttpClient();
-                            client.setProtocols(Arrays.asList(Protocol.HTTP_1_1));
+                            OkHttpClient client = new OkHttpClient.Builder().protocols(Arrays.asList(Protocol.HTTP_1_1)).build();
                             Request request = new Request.Builder().get().url(scriptSource.getText().toString()).build();
                             Response response = client.newCall(request).execute();
                             JSONObject scriptObject = new JSONObject(response.body().string());

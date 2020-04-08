@@ -30,12 +30,12 @@ import com.eclipsesource.v8.V8;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
 import com.eclipsesource.v8.utils.V8ObjectUtils;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -264,8 +264,7 @@ public class SFScriptExecutor extends Thread {
         for(String key : v8headers.getKeys()){
             headers.put(key, v8headers.getString(key));
         }
-        OkHttpClient client = new OkHttpClient();
-        client.setFollowRedirects(false);
+        OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).build();
         Request req = null;
         if(method.equalsIgnoreCase("GET")) {
             req = new Request.Builder().url(url).headers(Headers.of(headers)).get().build();
