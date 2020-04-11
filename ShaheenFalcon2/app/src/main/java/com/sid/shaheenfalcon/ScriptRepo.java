@@ -2,7 +2,9 @@ package com.sid.shaheenfalcon;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -12,16 +14,19 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Environment;
 import android.util.Base64;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -30,11 +35,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -55,6 +62,7 @@ public class ScriptRepo extends AppCompatActivity {
 
     AlertDialog alerDialog = null;
     String initVector = "ShaheenFalconAPP";
+    private static int FILE_CHOOSER = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +71,9 @@ public class ScriptRepo extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Button btnRepoAdd  = (Button) findViewById(R.id.script_repo_btn_add);
+        ImageButton btnRepoAdd  = (ImageButton) findViewById(R.id.script_repo_btn_add),
+                btnAddLocalScript = (ImageButton) findViewById(R.id.script_repo_btn_add_local_script);
+
         ListView lv = (ListView) findViewById(R.id.script_repo_script_list);
 
         ScriptItemAdapter scriptItemAdapter = new ScriptItemAdapter(this, (new SFDBController(this)).getAllScripts());
@@ -134,6 +144,73 @@ public class ScriptRepo extends AppCompatActivity {
                 alerDialog.show();
             }
         });
+
+        btnAddLocalScript.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent browseIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                browseIntent.setType("*/*");
+                startActivityForResult(Intent.createChooser(browseIntent, "Choose Script file"), FILE_CHOOSER);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
+            Uri scriptFile = data.getData();
+            AlertDialog.Builder dlgLocalScriptBuilder = new AlertDialog.Builder(ScriptRepo.this);
+            LayoutInflater inflater = LayoutInflater.from(ScriptRepo.this);
+            View dlgLocalScript = inflater.inflate(R.layout.dialog_add_local_script, null);
+            final EditText etScriptName = dlgLocalScript.findViewById(R.id.dlg_local_script_name),
+                    etFirstRun = dlgLocalScript.findViewById(R.id.dlg_local_script_first_run),
+                    etMatchHost = dlgLocalScript.findViewById(R.id.dlg_local_script_match_host),
+                    etScriptFile = dlgLocalScript.findViewById(R.id.dlg_local_script_file_addr);
+            etScriptFile.setText(scriptFile.toString());
+            dlgLocalScriptBuilder.setView(dlgLocalScript);
+            dlgLocalScriptBuilder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    StringBuilder sb = new StringBuilder();
+
+                    if(!scriptFile.getPath().toString().equals("")){
+                        try {
+                            BufferedReader br = new BufferedReader(new InputStreamReader(getApplicationContext().getContentResolver().openInputStream(scriptFile)));
+                            String line = "";
+                            while((line = br.readLine()) != null){
+                                sb.append(line);
+                                sb.append('\n');
+                            }
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    JSONObject scriptObj = new JSONObject();
+                    try {
+                        scriptObj.put("content", sb.toString());
+                        scriptObj.put("script_name", etScriptName.getText().toString());
+                        scriptObj.put("first_run", etFirstRun.getText().toString());
+                        scriptObj.put("match_host", etMatchHost.getText().toString());
+                        scriptObj.put("match_url", "^" + etMatchHost.getText().toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    installScript(scriptFile.toString(), scriptObj, null);
+                }
+            });
+
+            dlgLocalScriptBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+
+            dlgLocalScriptBuilder.create().show();
+        }
     }
 
     private void installScript(String scriptSource, JSONObject script, String key){
@@ -142,7 +219,7 @@ public class ScriptRepo extends AppCompatActivity {
             String matchUrl = script.getString("match_url");
             String host = script.getString("match_host");
             String firstRunScript = script.getString("first_run");
-            String scriptCode = decryptScriptContent(script.getString("content"), key);
+            String scriptCode = key == null ? script.getString("content") : decryptScriptContent(script.getString("content"), key);
             File scriptStorage = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ShaheenFalcon/sfScripts/");
             File plainScriptStorage  = new File(getFilesDir().getAbsolutePath() + "/plainScriptStorage/");
             if(!scriptStorage.exists()){
@@ -163,7 +240,7 @@ public class ScriptRepo extends AppCompatActivity {
                 fos.close();
 
                 SFDBController sfdbController = new SFDBController(this);
-                sfdbController.insertScript(scriptName, scriptSource, host, matchUrl, encScript.getAbsolutePath(), plainScript.getAbsolutePath(), decryptScriptContent(firstRunScript, key));
+                sfdbController.insertScript(scriptName, scriptSource, host, matchUrl, encScript.getAbsolutePath(), plainScript.getAbsolutePath(), key == null ? script.getString("content") : decryptScriptContent(firstRunScript, key));
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
 
