@@ -17,16 +17,26 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" >
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <Button
+                <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:id="@+id/script_repo_btn_add"
-                    android:text="ADD"/>
-            </LinearLayout>
+                    android:src="@drawable/ic_add_white_24dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="48dp"
+                    android:text=""/>
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/script_repo_btn_add_local_script"
+                    android:src="@drawable/ic_add_local_white_24dp"
+                    android:layout_alignParentRight="true"
+                    android:text=""/>
+            </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
