@@ -100,7 +100,7 @@ public class Intruder extends AppCompatActivity {
                                 Intent intent = new Intent(Intruder.this, Intruder.class);
                                 Response res = client.newCall(req).execute();
                                 intent.putExtra(RES_CODE, res.code() + res.message());
-                                if (res.body().contentType().toString().startsWith("text") || res.body().contentType().toString().toLowerCase().matches("^(application/json|application/xml)")) {
+                                if (res.body() != null && (res.body().contentType().toString().startsWith("text") || res.body().contentType().toString().toLowerCase().matches("^(application\\/json|application\\/xml)"))) {
                                     intent.putExtra(RES_BODY, res.body().string());
                                 } else {
                                     intent.putExtra(RES_BODY, Base64.encodeToString(res.body().bytes(), Base64.NO_PADDING));
