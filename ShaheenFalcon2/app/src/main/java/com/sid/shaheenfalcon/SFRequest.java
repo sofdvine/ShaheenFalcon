@@ -8,6 +8,7 @@ public class SFRequest implements Serializable {
     private String method = "";
     private String url = "";
     Map<String, String> headers = null;
+    byte[] data = null;
 
     SFRequest(){
         this.headers = new HashMap<String, String>();
@@ -17,6 +18,13 @@ public class SFRequest implements Serializable {
         this.method = method;
         this.url = url;
         this.headers = headers;
+    }
+
+    SFRequest(String method, String url, Map<String, String> headers, byte[] data){
+        this.method = method;
+        this.url = url;
+        this.headers = headers;
+        this.data = data;
     }
 
     public Map<String, String> getHeaders() {
@@ -31,5 +39,6 @@ public class SFRequest implements Serializable {
         return url;
     }
 
+    public byte[] getData() { return  data; }
 
 }
