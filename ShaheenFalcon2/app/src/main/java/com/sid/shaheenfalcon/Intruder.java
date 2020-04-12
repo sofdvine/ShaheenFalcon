@@ -57,6 +57,7 @@ public class Intruder extends AppCompatActivity {
         } else if (getIntent().hasExtra(TYPE_RES)) {
             btnSend.setText("View In Browser");
         }
+        registerForContextMenu(etBody);
         btnSend.setOnClickListener(new View.OnClickListener() {
             String method, url, body,
                     contentType = "application/x-www-form-urlencoded";
@@ -100,7 +101,7 @@ public class Intruder extends AppCompatActivity {
                                 Intent intent = new Intent(Intruder.this, Intruder.class);
                                 Response res = client.newCall(req).execute();
                                 intent.putExtra(RES_CODE, res.code() + res.message());
-                                if (res.body() != null && (res.body().contentType().toString().startsWith("text") || res.body().contentType().toString().toLowerCase().matches("^(application\\/json|application\\/xml)"))) {
+                                if (res.body() != null && res.body().contentType() != null && (res.body().contentType().toString().startsWith("text") || res.body().contentType().toString().toLowerCase().matches("^(application\\/json|application\\/xml)"))) {
                                     intent.putExtra(RES_BODY, res.body().string());
                                 } else {
                                     intent.putExtra(RES_BODY, Base64.encodeToString(res.body().bytes(), Base64.NO_PADDING));
@@ -162,6 +163,10 @@ public class Intruder extends AppCompatActivity {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId() == R.id.btn_intruder) {
             menu.add(Menu.NONE, 1, Menu.NONE, "Default Video Player");
+        } else if (v.getId() == R.id.intruder_request_body) {
+            menu.add(Menu.NONE, 5, Menu.NONE, "Decode Base64");
+            menu.add(Menu.NONE, 6, Menu.NONE, "Encode Base64");
+//            menu.add(Menu.NONE, 7, Menu.NONE, "Show in Bytes");
         }
     }
 
@@ -180,6 +185,10 @@ public class Intruder extends AppCompatActivity {
             intent.putExtra("EXTRA_HEADERS", headers);
             intent.setData(Uri.parse(etUrl.getText().toString().trim()));
             startActivity(intent);
+        } else if (item.getItemId() == 5) {
+            etBody.setText(new String(Base64.decode(etBody.getText().toString(), Base64.NO_PADDING)));
+        } else if (item.getItemId() == 6) {
+            etBody.setText(Base64.encodeToString(etBody.getText().toString().getBytes(), Base64.NO_PADDING));
         }
         return super.onContextItemSelected(item);
     }
