@@ -431,6 +431,8 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("USER_AGENT", wv.getSettings().getUserAgentString());
             RequestListActivity.requests = (ArrayList<SFRequest>) requests.clone();
             startActivity(intent);
+        } else if (id == R.id.action_reload) {
+            wv.reload();
         }
 //        else if (id == R.id.action_user_agent) {
 //
