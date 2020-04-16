@@ -60,6 +60,7 @@ import java.util.Map;
 
 import static com.sid.shaheenfalcon.Intruder.REQ_BODY;
 import static com.sid.shaheenfalcon.Intruder.REQ_HEADERS;
+import static com.sid.shaheenfalcon.Intruder.REQ_METHOD;
 import static com.sid.shaheenfalcon.Intruder.RES_BODY;
 import static com.sid.shaheenfalcon.Intruder.RES_HEADERS;
 import static com.sid.shaheenfalcon.SFScriptExecutorService.SCRIPT_INPUT;
@@ -411,13 +412,16 @@ public class MainActivity extends AppCompatActivity {
         }else if(id == R.id.action_downloads){
             Intent i = new Intent(MainActivity.this, com.sid.shaheenfalcon.DownloadManager.class);
             startActivity(i);
-        }else if(id == R.id.action_torrent){
-            Intent i = new Intent(MainActivity.this, TorrentStreamActivity.class);
-            startActivity(i);
-            return true;
-        }else if (id == R.id.action_settings) {
-            return true;
-        }else if(id == R.id.action_timer_pause){
+        }
+//        else if(id == R.id.action_torrent){
+//            Intent i = new Intent(MainActivity.this, TorrentStreamActivity.class);
+//            startActivity(i);
+//            return true;
+//        }
+//        else if (id == R.id.action_settings) {
+//            return true;
+//        }
+        else if(id == R.id.action_timer_pause){
             item.setChecked(!item.isChecked());
             if (item.isChecked()) {
                 wv.pauseTimers();
@@ -433,6 +437,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         } else if (id == R.id.action_reload) {
             wv.reload();
+        } else if( id == R.id.action_rest_client ) {
+            Intent intruderIntent = new Intent(MainActivity.this, Intruder.class);
+            intruderIntent.putExtra(Intruder.TYPE_REQ, true);
+            intruderIntent.putExtra(Intruder.REQ_URL, "");
+            intruderIntent.putExtra(REQ_BODY, "");
+            intruderIntent.putExtra(REQ_HEADERS, new HashMap<String, String>());
+            intruderIntent.putExtra(REQ_METHOD, "");
+            startActivity(intruderIntent);
         }
 //        else if (id == R.id.action_user_agent) {
 //

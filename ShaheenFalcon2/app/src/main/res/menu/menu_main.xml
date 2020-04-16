@@ -17,25 +17,30 @@
         android:orderInCategory="100"
         android:title="Downloads"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_torrent"
-        android:orderInCategory="100"
-        android:title="Torrent"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/action_torrent"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="Torrent"-->
+        <!--app:showAsAction="never" />-->
     <item
         android:id="@+id/action_timer_pause"
         android:orderInCategory="100"
         android:title="Pause Timers"
         android:checkable="true" />
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/action_settings"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/action_settings"-->
+        <!--app:showAsAction="never" />-->
     <item
         android:id="@+id/action_view_source"
         android:orderInCategory="100"
         android:title="View Source"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_rest_client"
+        android:orderInCategory="100"
+        android:title="REST Client"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_page_contents"
