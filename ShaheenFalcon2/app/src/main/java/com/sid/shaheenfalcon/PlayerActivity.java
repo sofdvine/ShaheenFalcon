@@ -29,6 +29,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -129,7 +130,7 @@ public class PlayerActivity extends AppCompatActivity
   private PlayerView playerView;
   private LinearLayout debugRootView;
   private Button selectTracksButton;
-  private Button shareScreenButton;
+  private ImageButton shareScreenButton;
   private TextView debugTextView;
   private boolean isShowingTrackSelectionDialog;
 
